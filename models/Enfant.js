@@ -19,16 +19,16 @@ const documentsSchema = mongoose.Schema({
 
 const enfantSchema = mongoose.Schema({
   IdEnfant: String,
-  Nounou: [{ Type: mongoose.Schema.Types.ObjectId, ref: "nounou" }],
-  Famille: [{ Type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
+  Nounou: [{ type: mongoose.Schema.Types.ObjectId, ref: "nounou" }],
+  Famille: [{ type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
   Nom: String,
   Prénom: String,
   Poids: Number,
   Birthday: Date,
   Adresse: [adressSchema],
   Contacts: contatctsSchema,
-  Allergies: [{ Type: mongoose.Schema.Types.ObjectId, ref: "allergies" }],
-  Vaccins: [{ Type: mongoose.Schema.Types.ObjectId, ref: "vaccins" }],
+  Allergies: [{ type: mongoose.Schema.Types.ObjectId, ref: "allergies" }],
+  Vaccins: [{ type: mongoose.Schema.Types.ObjectId, ref: "vaccins" }],
   Documents: [documentsSchema],
 });
 

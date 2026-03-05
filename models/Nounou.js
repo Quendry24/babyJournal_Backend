@@ -23,7 +23,7 @@ const nounouSchema = mongoose.Schema({
   Password: String,
   IdNounou: String,
   Calendrier: calendrierSchema,
-  Famille: [{ Type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
+  Famille: [{ type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
   Nom: String,
   Prénom: String,
   Adresse: adressSchema,
