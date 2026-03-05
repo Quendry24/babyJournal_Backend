@@ -5,6 +5,7 @@ const heuresEnfantSchema = mongoose.Schema({
   Heures_arrivée: Date,
   Heures_départ: Date,
 });
+
 const calendrierSchema = mongoose.Schema({
   Date_Du_Jour: Date,
   Enfants: [{ Type: mongoose.Schema.Types.ObjectId, ref: "IdEnfant" }],
@@ -18,6 +19,7 @@ const adressSchema = mongoose.Schema({
   ville: String,
   Pays: String,
 });
+
 const nounouSchema = mongoose.Schema({
   Email: String,
   Password: String,
@@ -31,6 +33,7 @@ const nounouSchema = mongoose.Schema({
   PajeEmploi: String,
   Agrement: Number,
 });
-const Nounou = mongoose.model("Nounou", nounouSchema);
+
+const Nounou = mongoose.model("nounou", nounouSchema);
 
 module.exports = Nounou;

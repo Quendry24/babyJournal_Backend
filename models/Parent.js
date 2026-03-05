@@ -8,7 +8,6 @@ const parentSchema = mongoose.Schema({
   password: String,
   //token: String,
   idParent: String,
-
   Famille: { Type: mongoose.Schema.Types.ObjectId, ref: "famille" },
   Nom: String,
   Prénom: String,
