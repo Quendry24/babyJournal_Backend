@@ -1,17 +1,24 @@
 const mongoose = require("mongoose");
 
-const heuresEnfantSchema = mongoose.Schema({
-  Enfants: [{ Type: mongoose.Schema.Types.ObjectId, ref: "IdEnfant" }],
-  Heures_arrivée: Date,
-  Heures_départ: Date,
+// const heuresEnfantSchema = mongoose.Schema({
+//   Enfants: [{ type: mongoose.Schema.Types.ObjectId, ref: "enfant" }],
+//   Heures_arrivée: Date,
+//   Heures_départ: Date,
+// });
+
+const todayEnfantSchema = mongoose.Schema({
+  idEnfant: { type: mongoose.Schema.Types.ObjectId, ref: "enfant" },
+  Nom: String,
+  Heures_arrivée: String,
+  Heures_départ: String,
 });
 
 const calendrierSchema = mongoose.Schema({
-  Date_Du_Jour: Date,
-  Enfants: [{ Type: mongoose.Schema.Types.ObjectId, ref: "IdEnfant" }],
+  Date_Du_Jour: String,
+  Enfants: [todayEnfantSchema],
   Début_vacances: Date,
   Fin_Vacances: Date,
-  heuresEnfant: heuresEnfantSchema,
+  // heuresEnfant: heuresEnfantSchema,
 });
 
 const adressSchema = mongoose.Schema({
@@ -24,8 +31,8 @@ const nounouSchema = mongoose.Schema({
   Email: String,
   Password: String,
   IdNounou: String,
-  Calendrier: calendrierSchema,
-  Famille: [{ Type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
+  Calendrier: [calendrierSchema],
+  Famille: [{ type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
   Nom: String,
   Prénom: String,
   Adresse: adressSchema,
