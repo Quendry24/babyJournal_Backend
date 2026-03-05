@@ -6,9 +6,10 @@ const contactsSchema = mongoose.Schema({
 const parentSchema = mongoose.Schema({
   email: String,
   password: String,
-  //token: String,
-  idParent: String,
-  Famille: { Type: mongoose.Schema.Types.ObjectId, ref: "famille" },
+  token: String,
+  // idParent: String, = token (melissa)
+
+  Famille: { type: mongoose.Schema.Types.ObjectId, ref: "famille" },
   Nom: String,
   Prénom: String,
   Rôle: String,

@@ -40,7 +40,6 @@ const nounouSchema = mongoose.Schema({
   PajeEmploi: String,
   Agrement: Number,
 });
-
 const Nounou = mongoose.model("nounou", nounouSchema);
 
 module.exports = Nounou;
