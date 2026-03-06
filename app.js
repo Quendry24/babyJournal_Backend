@@ -10,6 +10,7 @@ var usersRouter = require("./routes/users");
 var nounouRouter = require("./routes/nounou");
 //var usersRouter = require("./routes/users");
 var parentsRouter = require("./routes/parents");
+var enfantsRouter = require("./routes/enfants");
 
 var app = express();
 
@@ -26,5 +27,6 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/nounou", nounouRouter);
 app.use("/parents", parentsRouter);
+app.use("/enfants", enfantsRouter);
 
 module.exports = app;

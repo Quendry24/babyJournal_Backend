@@ -1,50 +1,87 @@
 var express = require("express");
 var router = express.Router();
 const Nounou = require("../models/Nounou.js");
-/* GET home page. */
+const Enfant = require("../models/Enfant.js");
+
 router.post("/calendrier/semaine/:IdNounou", (req, res) => {
-  console.log("bien reçu");
-  const { date } = req.body;
+  const { date, allChild } = req.body;
   const { IdNounou } = req.params;
+  let planningSemaine = [];
   let semaine = [];
+  let enfantsSemaine = [];
+
   const monday = date;
   for (let i = 0; i < 7; i++) {
+    let enfantsJour = [];
     let newDay = new Date(monday);
     newDay.setDate(newDay.getDate() + i);
-    semaine.push({
-      Date_Du_Jour: newDay.toISOString().split("T")[0],
-      Enfants: [{ Nom: "Léa" }, { Nom: "Martin" }],
+    const formattedDate = newDay.toISOString().split("T")[0];
+
+    semaine.push(formattedDate);
+
+    allChild.map((data) => {
+      data.presence[i] &&
+        enfantsJour.push({ idbabyJournal: data.idBabyJournal, Nom: data.name });
+    });
+    enfantsSemaine.push({ [formattedDate]: enfantsJour });
+
+    planningSemaine.push({
+      Date_Du_Jour: formattedDate,
+      Enfants: enfantsJour,
       Début_vacances: date.split("T")[0],
       Fin_Vacances: date.split("T")[0],
     });
   }
 
+  Nounou.updateOne(
+    { IdNounou },
+    {
+      $pull: {
+        Calendrier: { Date_Du_Jour: { $in: semaine } },
+      },
+    },
+    { upsert: true },
+  )
+    .then(() => {
+      return Nounou.updateOne(
+        { IdNounou },
+        {
+          $setOnInsert: { IdNounou },
+          $push: { Calendrier: { $each: planningSemaine } },
+        },
+        { upsert: true },
+      );
+    })
+    .then(() => {
+      res.json({ result: true, planningSemaine });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ result: false });
+    });
+});
+
+router.post("/calendrier/jour/:IdNounou", (req, res) => {
+  const { today } = req.body;
+  const { IdNounou } = req.params;
   Nounou.findOne({ IdNounou })
     .then((data) => {
       if (!data) {
-        console.log("Nounou introuvable");
-        const newWeek = new Nounou({
-          IdNounou,
-          Calendrier: semaine,
-        });
-        newWeek.save().then(() => {
-          res.json({ result: true, date, IdNounou });
-        });
-      } else {
-        console.log("Nounou existante");
-        Nounou.updateOne(
-          { IdNounou },
-          {
-            $addToSet: {
-              Calendrier: { $each: semaine },
-            },
-          },
-        ).then(() => {
-          res.json({ result: true, date, IdNounou });
-        });
+        return res.json({ result: false });
       }
+      const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
+      console.log(data);
+      const child = jour.Enfants;
+      res.json({ result: true, child });
     })
     .catch((err) => console.log(err));
+});
+
+router.get("/enfants/:idNounou", (req, res) => {
+  const { idNounou } = req.params;
+  Enfant.find({ Nounou: idNounou }).then((data) => {
+    res.json({ result: true, childs: data });
+  });
 });
 
 module.exports = router;
