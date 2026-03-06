@@ -47,4 +47,34 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
     .catch((err) => console.log(err));
 });
 
+//inscription
+router.post("/signUp", function (req, res) {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!checkBody(req.body, ["email", "password"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+
+  Parent.findOne({ email: req.body.email }).then((dataNounou) => {
+    if (dataNounou === null) {
+      const hash = bcrypt.hashSync(req.body.password, 10);
+      //création nouveau utilisateur
+      const newNounou = new Nounou({
+        email: req.body.email,
+        password: hash,
+        token: uid2(32),
+      });
+      console.log(newNounou);
+
+      newParent.save().then((newNounou) => {
+        console.log(newNounou.token);
+        res.json({ result: true, token: newNounou.token });
+      });
+    } else {
+      res.json({ result: false, error: " already exists" });
+    }
+  });
+});
+
 module.exports = router;

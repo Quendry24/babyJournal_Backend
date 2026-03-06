@@ -13,10 +13,6 @@ const token = uid2(32);
 const bcrypt = require("bcrypt");
 const { checkBody } = require("../modules/checkbody");
 
-const dataParent = {
-  email: "test@test.fr",
-  password: "test",
-};
 //inscription
 router.post("/signUp", function (req, res) {
   const email = req.body.email;

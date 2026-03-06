@@ -11,8 +11,8 @@ const parentSchema = mongoose.Schema({
 
   Famille: { type: mongoose.Schema.Types.ObjectId, ref: "famille" },
   Nom: String,
-  Prénom: String,
-  Rôle: String,
+  Prenom: String,
+  Role: String,
   Birthday: Date,
   Adresse: String,
   Contacts: [contactsSchema],
