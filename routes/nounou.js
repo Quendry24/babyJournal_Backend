@@ -1,6 +1,17 @@
 var express = require("express");
 var router = express.Router();
+
+require("../models/connection");
+const mongoose = require("mongoose");
+
 const Nounou = require("../models/Nounou.js");
+const Parent = require("../models/Parent");
+
+const uid2 = require("uid2");
+const bcrypt = require("bcrypt");
+
+const { checkBody } = require("../modules/checkbody.js");
+/* GET home page. */
 const Enfant = require("../models/Enfant.js");
 
 router.post("/calendrier/semaine/:IdNounou", (req, res) => {
@@ -61,21 +72,106 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
     });
 });
 
-router.post("/calendrier/jour/:IdNounou", (req, res) => {
-  const { today } = req.body;
+router.get("/calendrier/jour/:IdNounou", (req, res) => {
   const { IdNounou } = req.params;
-  Nounou.findOne({ IdNounou })
-    .then((data) => {
-      if (!data) {
-        return res.json({ result: false });
-      }
-      const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
-      console.log(data);
-      const child = jour.Enfants;
-      res.json({ result: true, child });
-    })
-    .catch((err) => console.log(err));
+  const today = new Date();
+  Nounou.findOne({ IdNounou }).then((data) => {
+    console.log(data);
+    const enfantsDuJour = data.Calendrier.filter(
+      (e) => e.Date_Du_Jour === today,
+    );
+    console.log("edj", enfantsDuJour);
+
+    res.json({ result: true, enfantsDuJour });
+  });
+  // Nounou.findOne({ IdNounou })
+  //   .then((data) => {
+  //     if (!data) {
+  //       return res.json({ result: false });
+  //     }
+  //     const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
+  //     console.log(data);
+  //     const child = jour.Enfants;
+  //     res.json({ result: true, child });
+  //   })
+  //   .catch((error) => console.log(error));
 });
+
+//inscription
+router.post("/signUp", function (req, res) {
+  console.log("Route signUp ok");
+  console.log(req.body);
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!checkBody(req.body, ["email", "password"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+
+  Nounou.findOne({ email: req.body.email })
+    .then((dataNounou) => {
+      if (dataNounou === null) {
+        const hash = bcrypt.hashSync(req.body.password, 10);
+        // création nouveau utilisateur
+        const newNounou = new Nounou({
+          email: req.body.email,
+          password: hash,
+          token: uid2(32),
+        });
+        console.log(newNounou);
+
+        newNounou.save().then((newNounou) => {
+          console.log(newNounou.token);
+          res.json({ result: true, token: newNounou.token });
+        });
+      } else {
+        res.json({ result: false, error: " already exists" });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.json({ result: false, error: "database error" });
+    });
+});
+
+//Connexion
+
+router.post("/signIn", (req, res) => {
+  if (!checkBody(req.body, ["email", "password"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+  Nounou.findOne({ email: req.body.email })
+    .then((dataNounou) => {
+      if (
+        dataNounou &&
+        bcrypt.compareSync(req.body.password, dataNounou.password)
+      ) {
+        res.json({ result: true, token: dataNounou.token });
+      } else {
+        res.json({ result: false, error: "User not found or wrong password" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.json({ result: false, error: "Server error" });
+    });
+});
+
+// router.post("/calendrier/jour/:IdNounou", (req, res) => {
+//   const { today } = req.body;
+//   const { IdNounou } = req.params;
+//   Nounou.findOne({ IdNounou })
+//     .then((data) => {
+//       if (!data) {
+//         return res.json({ result: false });
+//       }
+//       const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
+//       const child = jour.Enfants;
+//       res.json({ result: true, child });
+//     })
+//     .catch((err) => console.log(err));
+// });
 
 router.get("/enfants/:idNounou", (req, res) => {
   const { idNounou } = req.params;

@@ -5,6 +5,7 @@ require("../models/connection");
 
 const mongoose = require("mongoose");
 const Parent = require("../models/Parent");
+const Nounou = require("../models/Nounou.js");
 
 const uid2 = require("uid2");
 const token = uid2(32);
@@ -13,12 +14,9 @@ const token = uid2(32);
 const bcrypt = require("bcrypt");
 const { checkBody } = require("../modules/checkbody");
 
-const dataParent = {
-  email: "test@test.fr",
-  password: "test",
-};
 //inscription
 router.post("/signUp", function (req, res) {
+  console.log(req.body);
   const email = req.body.email;
   const password = req.body.password;
   if (!checkBody(req.body, ["email", "password"])) {
@@ -47,13 +45,16 @@ router.post("/signUp", function (req, res) {
   });
 });
 
-router.post("/signIn", (req, res) => {
+router.post("/signUp", (req, res) => {
   if (!checkBody(req.body, ["email", "password"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-  Parent.findOne({ email: req.body.email }).then((Dataparent) => {
-    if (data && bcrypt.compareSync(req.body.password, data.password)) {
+  Parent.findOne({ email: req.body.email }).then((dataParent) => {
+    if (
+      dataParent &&
+      bcrypt.compareSync(req.body.password, dataParent.password)
+    ) {
       res.json({ result: true, token: data.token });
     } else {
       res.json({ result: false, error: "Parent not found or wrong password" });
@@ -61,9 +62,28 @@ router.post("/signIn", (req, res) => {
   });
 });
 
-// router.post("/SignUp",async(req,res)=>{
-
-// };)
+//Connexion
+router.post("/signIn", (req, res) => {
+  if (!checkBody(req.body, ["email", "password"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+  Parent.findOne({ email: req.body.email })
+    .then((dataParent) => {
+      if (
+        dataParent &&
+        bcrypt.compareSync(req.body.password, dataParent.password)
+      ) {
+        res.json({ result: true, token: dataParent.token });
+      } else {
+        res.json({ result: false, error: "User not found or wrong password" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.json({ result: false, error: "Server error" });
+    });
+});
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {
