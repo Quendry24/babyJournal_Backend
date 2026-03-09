@@ -61,21 +61,34 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
     });
 });
 
-router.post("/calendrier/jour/:IdNounou", (req, res) => {
-  const { today } = req.body;
+router.get("/calendrier/jour/:IdNounou", (req, res) => {
   const { IdNounou } = req.params;
-  Nounou.findOne({ IdNounou })
-    .then((data) => {
-      if (!data) {
-        return res.json({ result: false });
-      }
-      const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
-      console.log(data);
-      const child = jour.Enfants;
-      res.json({ result: true, child });
-    })
-    .catch((err) => console.log(err));
+  const today = new Date();
+  Nounou.findOne({ IdNounou }).then((data) => {
+    console.log(data);
+    const enfantsDuJour = data.Calendrier.filter(
+      (e) => e.Date_Du_Jour === today,
+    );
+    console.log("edj", enfantsDuJour);
+
+    res.json({ result: true, enfantsDuJour });
+  });
 });
+
+// router.post("/calendrier/jour/:IdNounou", (req, res) => {
+//   const { today } = req.body;
+//   const { IdNounou } = req.params;
+//   Nounou.findOne({ IdNounou })
+//     .then((data) => {
+//       if (!data) {
+//         return res.json({ result: false });
+//       }
+//       const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
+//       const child = jour.Enfants;
+//       res.json({ result: true, child });
+//     })
+//     .catch((err) => console.log(err));
+// });
 
 router.get("/enfants/:idNounou", (req, res) => {
   const { idNounou } = req.params;
