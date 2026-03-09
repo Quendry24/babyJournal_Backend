@@ -18,6 +18,7 @@ var nounouRouter = require("./routes/nounou");
 var usersRouter = require("./routes/users");
 var parentsRouter = require("./routes/parents");
 var enfantsRouter = require("./routes/enfants");
+var uploadRouter = require("./routes/upload");
 
 const fileUpload = require("express-fileupload");
 var app = express();
@@ -38,5 +39,6 @@ app.use("/users", usersRouter);
 app.use("/nounou", nounouRouter);
 app.use("/parents", parentsRouter);
 app.use("/enfants", enfantsRouter);
+app.use("/upload", uploadRouter);
 
 module.exports = app;
