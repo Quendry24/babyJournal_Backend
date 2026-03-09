@@ -1,6 +1,16 @@
 var express = require("express");
 var router = express.Router();
+
+require("../models/connection");
+const mongoose = require("mongoose");
+
 const Nounou = require("../models/Nounou.js");
+const Parent = require("../models/Parent");
+
+const uid2 = require("uid2");
+const bcrypt = require("bcrypt");
+
+const { checkBody } = require("../modules/checkbody.js");
 /* GET home page. */
 router.post("/calendrier/semaine/:IdNounou", (req, res) => {
   console.log("bien reçu");
@@ -44,11 +54,13 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
         });
       }
     })
-    .catch((err) => console.log(err));
+    .catch((error) => console.log(error));
 });
 
 //inscription
 router.post("/signUp", function (req, res) {
+  console.log("Route signUp ok");
+  console.log(req.body);
   const email = req.body.email;
   const password = req.body.password;
   if (!checkBody(req.body, ["email", "password"])) {
@@ -56,25 +68,54 @@ router.post("/signUp", function (req, res) {
     return;
   }
 
-  Parent.findOne({ email: req.body.email }).then((dataNounou) => {
-    if (dataNounou === null) {
-      const hash = bcrypt.hashSync(req.body.password, 10);
-      //création nouveau utilisateur
-      const newNounou = new Nounou({
-        email: req.body.email,
-        password: hash,
-        token: uid2(32),
-      });
-      console.log(newNounou);
+  Nounou.findOne({ email: req.body.email })
+    .then((dataNounou) => {
+      if (dataNounou === null) {
+        const hash = bcrypt.hashSync(req.body.password, 10);
+        // création nouveau utilisateur
+        const newNounou = new Nounou({
+          email: req.body.email,
+          password: hash,
+          token: uid2(32),
+        });
+        console.log(newNounou);
 
-      newParent.save().then((newNounou) => {
-        console.log(newNounou.token);
-        res.json({ result: true, token: newNounou.token });
-      });
-    } else {
-      res.json({ result: false, error: " already exists" });
-    }
-  });
+        newNounou.save().then((newNounou) => {
+          console.log(newNounou.token);
+          res.json({ result: true, token: newNounou.token });
+        });
+      } else {
+        res.json({ result: false, error: " already exists" });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.json({ result: false, error: "database error" });
+    });
+});
+
+//Connexion
+
+router.post("/signIn", (req, res) => {
+  if (!checkBody(req.body, ["email", "password"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+  Nounou.findOne({ email: req.body.email })
+    .then((dataNounou) => {
+      if (
+        dataNounou &&
+        bcrypt.compareSync(req.body.password, dataNounou.password)
+      ) {
+        res.json({ result: true, token: dataNounou.token });
+      } else {
+        res.json({ result: false, error: "User not found or wrong password" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.json({ result: false, error: "Server error" });
+    });
 });
 
 module.exports = router;
