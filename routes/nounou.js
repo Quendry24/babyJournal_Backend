@@ -13,15 +13,15 @@ const bcrypt = require("bcrypt");
 const { checkBody } = require("../modules/checkbody.js");
 /* GET home page. */
 const Enfant = require("../models/Enfant.js");
+const Journee = require("../models/Journee.js");
 
 router.post("/calendrier/semaine/:IdNounou", (req, res) => {
-  const { date, allChild } = req.body;
+  const { monday, allChild } = req.body;
   const { IdNounou } = req.params;
   let planningSemaine = [];
   let semaine = [];
   let enfantsSemaine = [];
 
-  const monday = date;
   for (let i = 0; i < 7; i++) {
     let enfantsJour = [];
     let newDay = new Date(monday);
@@ -32,15 +32,16 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
 
     allChild.map((data) => {
       data.presence[i] &&
-        enfantsJour.push({ idbabyJournal: data.idBabyJournal, Nom: data.name });
+        enfantsJour.push({
+          idBabyJournal: data.idBabyJournal,
+          Prenom: data.Prenom,
+        });
     });
     enfantsSemaine.push({ [formattedDate]: enfantsJour });
 
     planningSemaine.push({
       Date_Du_Jour: formattedDate,
       Enfants: enfantsJour,
-      Début_vacances: date.split("T")[0],
-      Fin_Vacances: date.split("T")[0],
     });
   }
 
@@ -51,7 +52,6 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
         Calendrier: { Date_Du_Jour: { $in: semaine } },
       },
     },
-    { upsert: true },
   )
     .then(() => {
       return Nounou.updateOne(
@@ -72,29 +72,44 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
     });
 });
 
+router.get("/calendrier/semaine/:IdNounou", (req, res) => {
+  const { IdNounou } = req.params;
+  const { monday } = req.query;
+
+  const semaine = [];
+  for (let i = 0; i < 7; i++) {
+    let newDay = new Date(monday);
+    newDay.setDate(newDay.getDate() + i);
+    semaine.push(newDay.toISOString().split("T")[0]);
+  }
+
+  Nounou.findOne({ IdNounou })
+    .then((data) => {
+      if (!data) return res.json({ result: false });
+      const planning = data.Calendrier.filter((e) =>
+        semaine.includes(e.Date_Du_Jour),
+      );
+      res.json({ result: true, planning });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ result: false });
+    });
+});
+
 router.get("/calendrier/jour/:IdNounou", (req, res) => {
   const { IdNounou } = req.params;
   const today = new Date();
   Nounou.findOne({ IdNounou }).then((data) => {
-    console.log(data);
-    const enfantsDuJour = data.Calendrier.filter(
-      (e) => e.Date_Du_Jour === today,
+    if (!data) {
+      return res.json({ result: false, error: "Nounou introuvable" });
+    }
+    const enfantsDuJour = data.Calendrier.find(
+      (e) => e.Date_Du_Jour === today.toISOString().split("T")[0],
     );
-    console.log("edj", enfantsDuJour);
 
-    res.json({ result: true, enfantsDuJour });
+    res.json({ result: true, enfantsDuJour: enfantsDuJour.Enfants || [] });
   });
-  // Nounou.findOne({ IdNounou })
-  //   .then((data) => {
-  //     if (!data) {
-  //       return res.json({ result: false });
-  //     }
-  //     const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
-  //     console.log(data);
-  //     const child = jour.Enfants;
-  //     res.json({ result: true, child });
-  //   })
-  //   .catch((error) => console.log(error));
 });
 
 //inscription
@@ -158,26 +173,24 @@ router.post("/signIn", (req, res) => {
     });
 });
 
-// router.post("/calendrier/jour/:IdNounou", (req, res) => {
-//   const { today } = req.body;
-//   const { IdNounou } = req.params;
-//   Nounou.findOne({ IdNounou })
-//     .then((data) => {
-//       if (!data) {
-//         return res.json({ result: false });
-//       }
-//       const jour = data.Calendrier.find((e) => e.Date_Du_Jour === today);
-//       const child = jour.Enfants;
-//       res.json({ result: true, child });
-//     })
-//     .catch((err) => console.log(err));
-// });
-
 router.get("/enfants/:idNounou", (req, res) => {
   const { idNounou } = req.params;
   Enfant.find({ Nounou: idNounou }).then((data) => {
     res.json({ result: true, childs: data });
   });
+});
+
+//route pour enregistrer les repas
+router.post("/repas/:idBabyJournal", (req, res) => {
+  const { idBabyJournal } = req.params;
+  let newDay = new Date();
+  // const formattedDate = newDay.toISOString().split("T")[0];
+  // const nouveauRepas;
+  Journee.updateOne(
+    { idBabyJournal, Date: newDay },
+    { Repas: nouveauRepas },
+    { upsert: true },
+  ).then((data) => {});
 });
 
 module.exports = router;
