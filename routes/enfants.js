@@ -20,16 +20,24 @@ router.post("/add", (req, res) => {
     Prenom,
     Birthday, //stocke a -2 heure mais on remet bien avec localstring(fr) coté front
     Nounou: idNounou,
+    Famille: "123",
   });
 
   newChild
     .save()
     .then(() => {
-      res.json({ result: true, idBabyJournal, Birthday });
+      res.json({ result: true, newChild });
     })
     .catch((err) => console.log(err));
 });
 
+router.get("/:idBabyJournal", (req, res) => {
+  const { idBabyJournal } = req.params;
+  Enfant.findOne({ idBabyJournal }).then((data) => {
+    console.log("enfant trouvé", data);
+    res.json({ result: true, data });
+  });
+});
 //Route GET pour récupérer les enfants
 
 router.get("/famille/:idFamille", (req, res) => {
