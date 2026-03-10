@@ -1,13 +1,6 @@
 require("dotenv").config();
 require("./models/connection");
 
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
@@ -18,6 +11,7 @@ var nounouRouter = require("./routes/nounou");
 var usersRouter = require("./routes/users");
 var parentsRouter = require("./routes/parents");
 var enfantsRouter = require("./routes/enfants");
+var uploadRouter = require("./routes/upload");
 
 const fileUpload = require("express-fileupload");
 var app = express();
@@ -38,5 +32,6 @@ app.use("/users", usersRouter);
 app.use("/nounou", nounouRouter);
 app.use("/parents", parentsRouter);
 app.use("/enfants", enfantsRouter);
+app.use("/upload", uploadRouter);
 
 module.exports = app;

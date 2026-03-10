@@ -20,7 +20,8 @@ const documentsSchema = mongoose.Schema({
 const enfantSchema = mongoose.Schema({
   idBabyJournal: String,
   Nounou: String, // pas object id car c'est la nounou qui crée l'enfant
-  Famille: [{ type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
+  // Famille: [{ type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
+  Famille: [String],
   Nom: String,
   Prenom: String,
   Poids: Number,

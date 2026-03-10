@@ -7,8 +7,8 @@ const mongoose = require("mongoose");
 // });
 
 const todayEnfantSchema = mongoose.Schema({
-  idEnfant: { type: mongoose.Schema.Types.ObjectId, ref: "enfant" },
-  Nom: String,
+  idBabyJournal: String,
+  Prenom: String,
   Heures_arrivée: String,
   Heures_départ: String,
 });
