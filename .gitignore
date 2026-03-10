@@ -60,4 +60,7 @@ typings/
 # next.js build output
 .next
 
+app.test.js
+route.test.js
+
 yarn.lock

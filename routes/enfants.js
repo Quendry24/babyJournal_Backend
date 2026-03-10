@@ -3,6 +3,7 @@ var router = express.Router();
 const Enfant = require("../models/Enfant.js");
 const uid2 = require("uid2");
 const { checkBody } = require("../modules/checkbody.js");
+const mongoose = require("mongoose");
 
 router.post("/add", (req, res) => {
   const { Nom, Prenom, Birthday, idNounou } = req.body;
@@ -31,8 +32,9 @@ router.post("/add", (req, res) => {
 
 //Route GET pour récupérer les enfants
 
-router.get("/famille/:familleId", (req, res) => {
-  Enfant.find({ Famille: req.params.familleId })
+router.get("/famille/:idFamille", (req, res) => {
+  const idFamille = req.params.idFamille;
+  Enfant.find({ Famille: idFamille })
     .then((enfants) => {
       res.json({ result: true, enfants });
     })
