@@ -37,5 +37,16 @@ router.get("/:idBabyJournal", (req, res) => {
     res.json({ result: true, data });
   });
 });
+//Route GET pour récupérer les enfants
+
+router.get("/famille/:familleId", (req, res) => {
+  Enfant.find({ Famille: req.params.familleId })
+    .then((enfants) => {
+      res.json({ result: true, enfants });
+    })
+    .catch((error) => {
+      res.json({ result: false, error: error.message });
+    });
+});
 
 module.exports = router;
