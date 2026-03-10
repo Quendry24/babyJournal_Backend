@@ -59,3 +59,9 @@ typings/
 
 # next.js build output
 .next
+
+#yarn lock
+yarn.lock
+
+#route.test.js
+route.test.js

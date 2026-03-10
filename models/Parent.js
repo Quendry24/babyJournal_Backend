@@ -8,8 +8,8 @@ const parentSchema = mongoose.Schema({
   password: String,
   token: String,
   // idParent: String, = token (melissa)
-
-  Famille: { type: mongoose.Schema.Types.ObjectId, ref: "famille" },
+  Famille: [String],
+  // Famille: { type: mongoose.Schema.Types.ObjectId, ref: "famille" },
   Nom: String,
   Prenom: String,
   Role: String,

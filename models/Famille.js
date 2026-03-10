@@ -3,8 +3,9 @@ const mongoose = require("mongoose");
 const familleSchema = mongoose.Schema({
   Nom: String,
   familyId: String,
-  Enfants: [{ Type: mongoose.Schema.Types.ObjectId, ref: "IdEnfant" }],
-  Parent: [{ Type: mongoose.Schema.Types.ObjectId, ref: "idParent" }],
+  //modification de "Type" en "type"
+  Enfants: [String],
+  Parent: [String],
 });
 
 const Famille = mongoose.model("famille", familleSchema);

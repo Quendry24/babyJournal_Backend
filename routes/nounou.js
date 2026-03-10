@@ -99,10 +99,11 @@ router.get("/calendrier/jour/:IdNounou", (req, res) => {
 
 //inscription
 router.post("/signUp", function (req, res) {
-  console.log("Route signUp ok");
+  console.log("Route nounou signUp ok");
   console.log(req.body);
   const email = req.body.email;
   const password = req.body.password;
+
   if (!checkBody(req.body, ["email", "password"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
@@ -111,22 +112,25 @@ router.post("/signUp", function (req, res) {
   Nounou.findOne({ email: req.body.email })
     .then((dataNounou) => {
       if (dataNounou === null) {
-        const hash = bcrypt.hashSync(req.body.password, 10);
-        // création nouveau utilisateur
-        const newNounou = new Nounou({
-          email: req.body.email,
-          password: hash,
-          token: uid2(32),
-        });
-        console.log(newNounou);
-
-        newNounou.save().then((newNounou) => {
-          console.log(newNounou.token);
-          res.json({ result: true, token: newNounou.token });
-        });
-      } else {
-        res.json({ result: false, error: " already exists" });
+        res.json({ result: false, error: "Nounou already exists" });
+        return;
       }
+      const hash = bcrypt.hashSync(req.body.password, 10);
+
+      const IdNounou = uid2(10);
+      // création nouveau utilisateur
+      const newNounou = new Nounou({
+        email: req.body.email,
+        password: hash,
+        IdNounou: IdNounou,
+        token: uid2(32),
+      });
+      console.log(newNounou);
+
+      newNounou.save().then((newNounou) => {
+        console.log(newNounou.token);
+        res.json({ result: true, token: newNounou.IdNounou });
+      });
     })
     .catch((error) => {
       console.log(error);
