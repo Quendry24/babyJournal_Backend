@@ -133,15 +133,29 @@ router.get("/allParents", (req, res) => {
   });
 });
 
-router.put("/updateInfos/", (req, res) => {
-  Parent.updateOne({
+router.put("/updateInfos/:idParent", (req, res) => {
+  const infos = {
+    Famille: req.body.famille,
+    Nom: req.body.nom,
     Prenom: req.body.prenom,
+    Role: req.body.role,
     Birthday: req.body.birthday,
     Adresse: req.body.adresse,
-    PajeEmploi: req.body.pajemploi,
-    Agrement: req.body.agrement,
-  }).then(() => {
-    res.json({ result: true });
-  });
+    Pajemploi: req.body.pajmploi,
+  };
+  // Contact
+  // Agrement: req.body.agrement
+
+  console.log("idParent reçu? :", req.params.idParent);
+
+  Parent.updateOne({ idParent: req.params.idParent })
+    .then(() => {
+      console.log(infos);
+      res.json({ result: true });
+    })
+    .catch(() => {
+      res.json({ result: false });
+    });
 });
+
 module.exports = router;
