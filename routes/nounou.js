@@ -184,17 +184,40 @@ router.get("/enfants/:idNounou", (req, res) => {
   });
 });
 
-//route pour enregistrer les repas
-router.post("/repas/:idBabyJournal", (req, res) => {
-  const { idBabyJournal } = req.params;
+//route pour enregistrer les items avec types dynamiques
+router.post("/:type/:idBabyJournal", (req, res) => {
+  const { type, idBabyJournal } = req.params;
   let newDay = new Date();
-  // const formattedDate = newDay.toISOString().split("T")[0];
-  // const nouveauRepas;
+  const formattedDate = newDay.toISOString().split("T")[0];
+
   Journee.updateOne(
-    { idBabyJournal, Date: newDay },
-    { Repas: nouveauRepas },
+    { idBabyJournal, Date: formattedDate },
+    { $push: { [type]: req.body } },
     { upsert: true },
-  ).then((data) => {});
+  )
+    .then(() => {
+      res.json({ result: true });
+    })
+    .catch((err) => res.json({ result: false, err }));
+});
+
+router.post("/commonActivity", (req, res) => {
+  const { ids, nom, commentaire } = req.body;
+  let newDay = new Date();
+  const formattedDate = newDay.toISOString().split("T")[0];
+  const promises = ids.map((data, i) =>
+    Journee.updateOne(
+      { idBabyJournal: data, Date: formattedDate },
+      { $push: { Activites: { nom, commentaire } } },
+      { upsert: true },
+    ),
+  );
+
+  Promise.all(promises)
+    .then(() => {
+      res.json({ result: true });
+    })
+    .catch((err) => res.status(500).json({ result: false, err }));
 });
 
 module.exports = router;

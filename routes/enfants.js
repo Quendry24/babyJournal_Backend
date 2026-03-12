@@ -20,7 +20,6 @@ router.post("/add", (req, res) => {
     Prenom,
     Birthday, //stocke a -2 heure mais on remet bien avec localstring(fr) coté front
     Nounou: idNounou,
-    Famille: "123",
   });
 
   newChild
@@ -35,11 +34,14 @@ router.get("/:idBabyJournal", (req, res) => {
   const { idBabyJournal } = req.params;
   Enfant.findOne({ idBabyJournal }).then((data) => {
     console.log("enfant trouvé", data);
+    if (!data) {
+      return res.status(500).json({ result: false });
+    }
     res.json({ result: true, data });
   });
 });
-//Route GET pour récupérer les enfants
 
+//Route GET pour récupérer les enfants
 router.get("/famille/:idFamille", (req, res) => {
   const idFamille = req.params.idFamille;
   Enfant.find({ Famille: idFamille })
@@ -49,6 +51,37 @@ router.get("/famille/:idFamille", (req, res) => {
     .catch((error) => {
       res.json({ result: false, error: error.message });
     });
+});
+
+//ajout un enfant à une famille
+router.post("/addToFamilly/:idBabyJournal", (req, res) => {
+  const { idBabyJournal } = req.params;
+  const { idFamille } = req.body;
+
+  Enfant.updateOne(
+    { idBabyJournal },
+    { $addToSet: { Famille: idFamille } },
+  ).then((data) => {
+    console.log("enfant trouvé", data);
+    if (!data) {
+      return res.status(500).json({ result: false });
+    }
+    res.json({ result: true, message: "enfant ajouté" });
+  });
+});
+
+//update d'un enfant
+router.post("/update/:idBabyJournal", (req, res) => {
+  const { idBabyJournal } = req.params;
+  const body = req.body;
+
+  Enfant.updateOne({ idBabyJournal }, body).then((data) => {
+    console.log("enfant trouvé", data);
+    if (!data) {
+      return res.status(500).json({ result: false });
+    }
+    res.json({ result: true, message: "enfant ajouté", updatedChild: data });
+  });
 });
 
 module.exports = router;
