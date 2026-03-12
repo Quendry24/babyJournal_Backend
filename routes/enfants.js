@@ -4,6 +4,7 @@ const Enfant = require("../models/Enfant.js");
 const uid2 = require("uid2");
 const { checkBody } = require("../modules/checkbody.js");
 const mongoose = require("mongoose");
+const Journee = require("../models/Journee.js");
 
 router.post("/add", (req, res) => {
   const { Nom, Prenom, Birthday, idNounou } = req.body;
@@ -53,6 +54,22 @@ router.get("/famille/:idFamille", (req, res) => {
     });
 });
 
+router.get("/journee/:idBabyJournal", (req, res) => {
+  console.log("ID reçu", req.params.idBabyJournal);
+  const { idBabyJournal } = req.params;
+
+  let today = new Date();
+  const formattedDate = today.toISOString().split("T")[0];
+
+  Journee.findOne({ idBabyJournal, Date: formattedDate })
+    .then((data) => {
+      console.log("Résultat Mongo", data);
+      res.json({ result: true, data });
+    })
+    .catch((error) => {
+      res.json({ result: false, error: error.message });
+    });
+});
 //ajout un enfant à une famille
 router.post("/addToFamilly/:idBabyJournal", (req, res) => {
   const { idBabyJournal } = req.params;

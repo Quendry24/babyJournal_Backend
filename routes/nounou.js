@@ -75,7 +75,7 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
 router.get("/calendrier/semaine/:IdNounou", (req, res) => {
   const { IdNounou } = req.params;
   const { monday } = req.query;
-
+  console.log(monday);
   const semaine = [];
   for (let i = 0; i < 7; i++) {
     let newDay = new Date(monday);
