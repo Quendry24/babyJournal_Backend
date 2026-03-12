@@ -48,7 +48,7 @@ router.post("/signUp", async (req, res) => {
     });
 
     await newParent.save();
-
+    //5RmJP6Svsq
     family.Parent.push(newParent._id);
     await family.save();
     res.json({
@@ -103,110 +103,12 @@ router.post("/signUp/join", async (req, res) => {
       result: true,
       email: req.body.email,
       familyId: req.body.idFamily,
-      idUser: newParent._id,
+      userId: newParent._id,
     });
   } catch (error) {
     res.status(500).json({ result: false, error });
   }
 });
-
-//creation parent pour rejoindre une famille
-router.post("/signUp2", function (req, res) {
-  console.log("route parent signUP2 ok", req.body);
-
-  const email = req.body.email;
-  const password = req.body.password;
-
-  if (!checkBody(req.body, ["email", "password"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
-    return;
-  }
-
-  Parent.findOne({ email: req.body.email }).then((dataParent) => {
-    if (dataParent !== null) {
-      res.json({ result: false, error: "Parent already exists" });
-
-
-      else if (})
-      return;
-    }
-
-    const hash = bcrypt.hashSync(req.body.password, 10);
-
-    const familyId = uid2(10);
-
-    const newFamily = new Famille({
-      Nom: "123",
-      familyId: familyId,
-    });
-
-    console.log("familyId généré :", familyId);
-    newFamily.save().then(() => {
-      console.log("nf", newFamily);
-      const newParent = new Parent({
-        email: req.body.email,
-        password: hash,
-        Nom: req.body.Nom,
-        Famille: familyId,
-      });
-
-      console.log(newParent);
-
-      newParent
-        .save()
-        .then((newParent) => {
-          console.log(newParent.familyId);
-
-          res.json({
-            result: true,
-            familyId,
-            idUser: newParent._id,
-          });
-        })
-        .then(() => {
-          Famille.updateOne({ familyId }, { Parent: idUser });
-        });
-    });
-  });
-});
-//   Parent.findOne({ email: req.body.email }).then((dataParent) => {
-//     if (dataParent !== null) {
-//       res.json({ result: false, error: "Parent already exists" });
-//       return;
-//     }
-
-//     const hash = bcrypt.hashSync(req.body.password, 10);
-
-//     const familyId = uid2(10);
-
-//     const newFamily = new Famille({
-//       Nom: "123",
-//       familyId: familyId,
-//     });
-
-//     console.log("familyId généré :", familyId);
-//     newFamily.save().then(() => {
-//       console.log("nf", newFamily);
-//       const newParent = new Parent({
-//         email: req.body.email,
-//         password: hash,
-//         Nom: req.body.Nom,
-//         Famille: familyId,
-//       });
-
-//       console.log(newParent);
-
-//       newParent
-//         .save()
-//         .then((newParent) => {
-//           console.log(newParent.familyId);
-
-//         })
-//         .then(() => {
-//           Famille.updateOne({ familyId }, { Parent: idUser });
-//         });
-//     });
-//   });
 
 //Connexion
 router.post("/signIn", (req, res) => {
