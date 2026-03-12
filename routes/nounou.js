@@ -75,7 +75,7 @@ router.post("/calendrier/semaine/:IdNounou", (req, res) => {
 router.get("/calendrier/semaine/:IdNounou", (req, res) => {
   const { IdNounou } = req.params;
   const { monday } = req.query;
-
+  console.log(monday);
   const semaine = [];
   for (let i = 0; i < 7; i++) {
     let newDay = new Date(monday);
@@ -104,11 +104,11 @@ router.get("/calendrier/jour/:IdNounou", (req, res) => {
     if (!data) {
       return res.json({ result: false, error: "Nounou introuvable" });
     }
-    const enfantsDuJour = data.Calendrier.find(
+    const enfantsDuJour = data?.Calendrier.find(
       (e) => e.Date_Du_Jour === today.toISOString().split("T")[0],
     );
 
-    res.json({ result: true, enfantsDuJour: enfantsDuJour.Enfants || [] });
+    res.json({ result: true, enfantsDuJour: enfantsDuJour?.Enfants || [] });
   });
 });
 
@@ -137,23 +137,55 @@ router.post("/signUp", function (req, res) {
       const newNounou = new Nounou({
         email: req.body.email,
         password: hash,
-        IdNounou: IdNounou,
-        token: uid2(32),
+        IdNounou,
       });
-      console.log(newNounou);
 
-      newNounou.save().then((newNounou) => {
+      newNounou.save().then(() => {
         console.log(newNounou);
         res.json({
           result: true,
           email: newNounou.email,
-          idUser: newNounou._id,
+          idNounou: newNounou.IdNounou,
         });
       });
     })
     .catch((error) => {
       console.log(error);
-      res.json({ result: false, error: "database error" });
+      res.status(500).json({ result: false, error });
+    });
+});
+
+//update infos
+router.put("/updateInfos/:idNounou", (req, res) => {
+  const infos = {
+    Nom: req.body.nom,
+    Prenom: req.body.prenom,
+    Agrement: req.body.agrement, // coté nounou
+    Birthday: req.body.date,
+    Adresse: req.body.adresse,
+    Pajemploi: req.body.pajemploi,
+  };
+
+  console.log("idNounou reçu? :", req.params.idNounou);
+  Nounou.updateOne(
+    { IdNounou: req.params.idNounou },
+
+    {
+      infos,
+      $addToSet: { Contact: req.body.contact }, //addToSet n'ajoute pas de doublon contraitrement a push
+    },
+    { upsert: true },
+  )
+    .then(() => {
+      console.log(infos);
+      res.json({
+        result: true,
+        infos,
+        Contact: req.body.contact,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({ result: false, err });
     });
 });
 
@@ -174,11 +206,10 @@ router.post("/signIn", (req, res) => {
         res.json({
           result: true,
           email: dataNounou.email,
-          IdNounou: dataNounou.IdNounou,
-          idUser: dataNounou._id,
+          userId: dataNounou.IdNounou,
         });
       } else {
-        res.json({
+        res.status(404).json({
           result: false,
           error: "Email ou mot de passe incorrect.",
         });
@@ -197,17 +228,40 @@ router.get("/enfants/:idNounou", (req, res) => {
   });
 });
 
-//route pour enregistrer les repas
-router.post("/repas/:idBabyJournal", (req, res) => {
-  const { idBabyJournal } = req.params;
+//route pour enregistrer les items avec types dynamiques
+router.post("/:type/:idBabyJournal", (req, res) => {
+  const { type, idBabyJournal } = req.params;
   let newDay = new Date();
-  // const formattedDate = newDay.toISOString().split("T")[0];
-  // const nouveauRepas;
+  const formattedDate = newDay.toISOString().split("T")[0];
+
   Journee.updateOne(
-    { idBabyJournal, Date: newDay },
-    { Repas: nouveauRepas },
+    { idBabyJournal, Date: formattedDate },
+    { $push: { [type]: req.body } },
     { upsert: true },
-  ).then((data) => {});
+  )
+    .then(() => {
+      res.json({ result: true });
+    })
+    .catch((err) => res.json({ result: false, err }));
+});
+
+router.post("/commonActivity", (req, res) => {
+  const { ids, nom, commentaire } = req.body;
+  let newDay = new Date();
+  const formattedDate = newDay.toISOString().split("T")[0];
+  const promises = ids.map((data, i) =>
+    Journee.updateOne(
+      { idBabyJournal: data, Date: formattedDate },
+      { $push: { Activites: { nom, commentaire } } },
+      { upsert: true },
+    ),
+  );
+
+  Promise.all(promises)
+    .then(() => {
+      res.json({ result: true });
+    })
+    .catch((err) => res.status(500).json({ result: false, err }));
 });
 
 module.exports = router;

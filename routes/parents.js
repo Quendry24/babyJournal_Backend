@@ -36,7 +36,7 @@ router.post("/signUp", async (req, res) => {
     const familyId = uid2(10);
 
     const newFamily = new Famille({
-      Nom: "123",
+      Nom: req.body.Nom,
       familyId: familyId,
     });
     const family = await newFamily.save();
@@ -44,7 +44,6 @@ router.post("/signUp", async (req, res) => {
     const newParent = new Parent({
       email: req.body.email,
       password: hash,
-      Nom: req.body.Nom,
       Famille: familyId,
     });
 
@@ -54,10 +53,61 @@ router.post("/signUp", async (req, res) => {
     await family.save();
     res.json({
       result: true,
+      email: req.body.email,
       familyId,
       idUser: newParent._id,
     });
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json({ result: false, error });
+  }
+});
+
+//inscription + rejoindre famille
+router.post("/signUp/join", async (req, res) => {
+  try {
+    console.log("route parent signUP ok", req.body);
+
+    const email = req.body.email;
+    const password = req.body.password;
+
+    if (!checkBody(req.body, ["email", "password", "idFamily"])) {
+      res.json({ result: false, error: "Missing or empty fields" });
+      return;
+    }
+    const parent = await Parent.findOne({ email });
+    if (parent !== null) {
+      res.status(404).json({ result: false, error: "Parent already exists" });
+      return;
+    }
+    const hash = bcrypt.hashSync(password, 10);
+
+    const family = await Famille.findOne({ familyId: req.body.idFamily });
+
+    if (!family) {
+      return res.status(404).json({ result: false, error: "Family not found" });
+    }
+
+    const newParent = new Parent({
+      email: req.body.email,
+      password: hash,
+      Famille: req.body.idFamily,
+    });
+
+    await newParent.save();
+    await Famille.updateOne(
+      { familyId: req.body.idFamily },
+      { $addToSet: { Parent: newParent._id } },
+    );
+
+    res.json({
+      result: true,
+      email: req.body.email,
+      familyId: req.body.idFamily,
+      idUser: newParent._id,
+    });
+  } catch (error) {
+    res.status(500).json({ result: false, error });
+  }
 });
 
 //creation parent pour rejoindre une famille
@@ -170,14 +220,20 @@ router.post("/signIn", (req, res) => {
         dataParent &&
         bcrypt.compareSync(req.body.password, dataParent.password)
       ) {
-        res.json({ result: true, token: dataParent.token });
+        res.json({
+          result: true,
+          email: dataParent.email,
+          userId: dataParent._id,
+        });
       } else {
-        res.json({ result: false, error: "User not found or wrong password" });
+        res
+          .status(404)
+          .json({ result: false, error: "User not found or wrong password" });
       }
     })
     .catch((err) => {
       console.error(err);
-      res.json({ result: false, error: "Server error" });
+      res.status(500).json({ result: false, error: "Server error" });
     });
 });
 
@@ -194,26 +250,36 @@ router.get("/allParents", (req, res) => {
 
 router.put("/updateInfos/:idParent", (req, res) => {
   const infos = {
-    Famille: req.body.famille,
     Nom: req.body.nom,
     Prenom: req.body.prenom,
     Role: req.body.role,
-    Birthday: req.body.birthday,
+    Birthday: req.body.date,
     Adresse: req.body.adresse,
-    Pajemploi: req.body.pajmploi,
+    Pajemploi: req.body.pajemploi,
   };
-  // Contact
-  // Agrement: req.body.agrement
 
   console.log("idParent reçu? :", req.params.idParent);
+  console.log("famille", req.body.famille);
+  Parent.updateOne(
+    { idParent: req.params.idParent },
 
-  Parent.updateOne({ idParent: req.params.idParent })
+    {
+      infos,
+      $addToSet: { Famille: req.body.famille, Contact: req.body.contact }, //addToSet n'ajoute pas de doublon contraitrement a push
+    },
+    { upsert: true },
+  )
     .then(() => {
       console.log(infos);
-      res.json({ result: true });
+      res.json({
+        result: true,
+        infos,
+        Famille: req.body.famille,
+        Contact: req.body.contact,
+      });
     })
-    .catch(() => {
-      res.json({ result: false });
+    .catch((err) => {
+      res.status(500).json({ result: false, err });
     });
 });
 
