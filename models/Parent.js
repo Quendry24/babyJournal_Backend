@@ -7,7 +7,7 @@ const parentSchema = mongoose.Schema({
   email: String,
   password: String,
   token: String,
-  // idParent: String, = token (melissa)
+  idParent: String,
   Famille: [String],
   // Famille: { type: mongoose.Schema.Types.ObjectId, ref: "famille" },
   Nom: String,
@@ -16,8 +16,7 @@ const parentSchema = mongoose.Schema({
   Birthday: Date,
   Adresse: String,
   Contacts: [contactsSchema],
-  PajeEmploi: String,
-  Agrément: Number,
+  PajEmploi: String,
 });
 
 const Parent = mongoose.model("parent", parentSchema);

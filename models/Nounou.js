@@ -28,8 +28,8 @@ const adressSchema = mongoose.Schema({
 });
 
 const nounouSchema = mongoose.Schema({
-  Email: String,
-  Password: String,
+  email: String,
+  password: String,
   IdNounou: String,
   Calendrier: [calendrierSchema],
   Famille: [{ type: mongoose.Schema.Types.ObjectId, ref: "famille" }],
@@ -37,7 +37,7 @@ const nounouSchema = mongoose.Schema({
   Prénom: String,
   Adresse: adressSchema,
   Contact: Number,
-  PajeEmploi: String,
+  PajEmploi: String,
   Agrement: Number,
 });
 const Nounou = mongoose.model("nounou", nounouSchema);
