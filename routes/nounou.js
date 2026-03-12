@@ -124,13 +124,13 @@ router.post("/signUp", function (req, res) {
     return;
   }
 
-  Nounou.findOne({ email: req.body.email })
+  Nounou.findOne({ email })
     .then((dataNounou) => {
-      if (dataNounou === null) {
-        res.json({ result: false, error: "Nounou already exists" });
+      if (dataNounou !== null) {
+        res.json({ result: false, error: "compte déjà existant" });
         return;
       }
-      const hash = bcrypt.hashSync(req.body.password, 10);
+      const hash = bcrypt.hashSync(password, 10);
 
       const IdNounou = uid2(10);
       // création nouveau utilisateur
@@ -143,8 +143,12 @@ router.post("/signUp", function (req, res) {
       console.log(newNounou);
 
       newNounou.save().then((newNounou) => {
-        console.log(newNounou.token);
-        res.json({ result: true, token: newNounou.IdNounou });
+        console.log(newNounou);
+        res.json({
+          result: true,
+          email: newNounou.email,
+          idUser: newNounou._id,
+        });
       });
     })
     .catch((error) => {
@@ -154,26 +158,35 @@ router.post("/signUp", function (req, res) {
 });
 
 //Connexion
-
 router.post("/signIn", (req, res) => {
+  console.log("route SignIn ok");
   if (!checkBody(req.body, ["email", "password"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, error: "champs manquants" });
     return;
   }
   Nounou.findOne({ email: req.body.email })
     .then((dataNounou) => {
+      console.log("dataNounou :", dataNounou);
       if (
         dataNounou &&
         bcrypt.compareSync(req.body.password, dataNounou.password)
       ) {
-        res.json({ result: true, token: dataNounou.token });
+        res.json({
+          result: true,
+          email: dataNounou.email,
+          IdNounou: dataNounou.IdNounou,
+          idUser: dataNounou._id,
+        });
       } else {
-        res.json({ result: false, error: "User not found or wrong password" });
+        res.json({
+          result: false,
+          error: "Email ou mot de passe incorrect.",
+        });
       }
     })
     .catch((err) => {
       console.error(err);
-      res.json({ result: false, error: "Server error" });
+      res.status(500).json({ result: false, error: "Erreur" });
     });
 });
 
@@ -184,17 +197,40 @@ router.get("/enfants/:idNounou", (req, res) => {
   });
 });
 
-//route pour enregistrer les repas
-router.post("/repas/:idBabyJournal", (req, res) => {
-  const { idBabyJournal } = req.params;
+//route pour enregistrer les items avec types dynamiques
+router.post("/:type/:idBabyJournal", (req, res) => {
+  const { type, idBabyJournal } = req.params;
   let newDay = new Date();
-  // const formattedDate = newDay.toISOString().split("T")[0];
-  // const nouveauRepas;
+  const formattedDate = newDay.toISOString().split("T")[0];
+
   Journee.updateOne(
-    { idBabyJournal, Date: newDay },
-    { Repas: nouveauRepas },
+    { idBabyJournal, Date: formattedDate },
+    { $push: { [type]: req.body } },
     { upsert: true },
-  ).then((data) => {});
+  )
+    .then(() => {
+      res.json({ result: true });
+    })
+    .catch((err) => res.json({ result: false, err }));
+});
+
+router.post("/commonActivity", (req, res) => {
+  const { ids, nom, commentaire } = req.body;
+  let newDay = new Date();
+  const formattedDate = newDay.toISOString().split("T")[0];
+  const promises = ids.map((data, i) =>
+    Journee.updateOne(
+      { idBabyJournal: data, Date: formattedDate },
+      { $push: { Activites: { nom, commentaire } } },
+      { upsert: true },
+    ),
+  );
+
+  Promise.all(promises)
+    .then(() => {
+      res.json({ result: true });
+    })
+    .catch((err) => res.status(500).json({ result: false, err }));
 });
 
 module.exports = router;

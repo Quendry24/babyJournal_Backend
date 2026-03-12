@@ -3,11 +3,12 @@ const mongoose = require("mongoose");
 const adressSchema = mongoose.Schema({
   Rue: String,
   Ville: String,
-  Pays: String,
+  Code_Postal: String,
 });
 
-const contatctsSchema = mongoose.Schema({
-  pediatre: Number,
+const contactSchema = mongoose.Schema({
+  nom: String,
+  numero: Number,
 });
 
 const documentsSchema = mongoose.Schema({
@@ -27,9 +28,9 @@ const enfantSchema = mongoose.Schema({
   Poids: Number,
   Birthday: Date,
   Adresse: [adressSchema],
-  Contacts: contatctsSchema,
-  Allergies: [{ type: mongoose.Schema.Types.ObjectId, ref: "allergies" }],
-  Vaccins: [{ type: mongoose.Schema.Types.ObjectId, ref: "vaccins" }],
+  Contacts: contactSchema,
+  Allergies: [String],
+  Vaccins: [String],
   Documents: [documentsSchema],
 });
 
