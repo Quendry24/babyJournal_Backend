@@ -1,11 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-require("../models/connection");
-
-const mongoose = require("mongoose");
 const Parent = require("../models/Parent");
-const Nounou = require("../models/Nounou.js");
 const Famille = require("../models/Famille.js");
 
 const uid2 = require("uid2");

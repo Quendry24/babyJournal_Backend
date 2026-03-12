@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 
-require("../models/connection");
 const mongoose = require("mongoose");
 
 const Nounou = require("../models/Nounou.js");
