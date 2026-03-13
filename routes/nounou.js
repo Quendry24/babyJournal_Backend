@@ -1,10 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-const mongoose = require("mongoose");
-
 const Nounou = require("../models/Nounou.js");
-const Parent = require("../models/Parent");
 
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
