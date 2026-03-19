@@ -12,8 +12,6 @@ const contactSchema = mongoose.Schema({
 });
 
 const documentsSchema = mongoose.Schema({
-  type: String,
-  idDoc: String,
   url: String,
   Date_de_creation: Date,
 });

@@ -101,4 +101,34 @@ router.post("/update/:idBabyJournal", (req, res) => {
   });
 });
 
+router.post("/addToDoc/:idBabyJournal", (req, res) => {
+  const { idBabyJournal } = req.params;
+  const { photoUrl } = req.body;
+
+  console.log(photoUrl, idBabyJournal, req.body);
+  Enfant.updateOne(
+    { idBabyJournal },
+    {
+      $addToSet: {
+        Documents: [{ url: photoUrl, Date_de_creation: new Date() }],
+      },
+    },
+  ).then((data) => {
+    if (!data) {
+      return res.status(500).json({ result: false });
+    }
+    res.json({ result: true, message: "photo ajouté" });
+  });
+});
+
+router.get("/photos/:idBabyJournal", (req, res) => {
+  const { idBabyJournal } = req.params;
+
+  Enfant.findOne({ idBabyJournal })
+    .then((data) => {
+      res.json({ result: true, photos: data.Documents });
+    })
+    .catch((err) => res.status(500).json({ result: false, err }));
+});
+
 module.exports = router;

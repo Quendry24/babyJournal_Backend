@@ -181,4 +181,15 @@ router.put("/updateInfos/:idParent", (req, res) => {
     });
 });
 
+//trouver la famille du parent à la connexion
+router.get("/famille/:idParent", (req, res) => {
+  const { idParent } = req.params;
+
+  Parent.findOne({ _id: idParent })
+    .then((data) => {
+      res.json({ result: true, idFamille: data.Famille[0] });
+    })
+    .catch((err) => res.json({ result: false, err }));
+});
+
 module.exports = router;
