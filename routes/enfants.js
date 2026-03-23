@@ -131,4 +131,15 @@ router.get("/photos/:idBabyJournal", (req, res) => {
     .catch((err) => res.status(500).json({ result: false, err }));
 });
 
+router.delete("/photo/:id", async (req, res) => {
+  const { id } = req.params;
+
+  await Enfant.updateOne(
+    { "Documents._id": id },
+    { $pull: { Documents: { _id: id } } },
+  );
+
+  res.json({ result: true });
+});
+
 module.exports = router;

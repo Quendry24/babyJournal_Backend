@@ -90,6 +90,7 @@ router.post("/signUp/join", async (req, res) => {
     });
 
     await newParent.save();
+
     await Famille.updateOne(
       { familyId: req.body.idFamily },
       { $addToSet: { Parent: newParent._id } },
